@@ -1,4 +1,4 @@
-// POLYMER_LIB.H  Routine made by Fabrizio Benedetti, Julien Dorier, Yannis Burnier.  University of Lausanne.
+// POLYMER_LIB.H  Routines made by Fabrizio Benedetti, Julien Dorier, Yannis Burnier.  University of Lausanne.
 // 2012 - NOW
 // The routine collected are used to analyze several observables of brownian dynamic
 // simulations of polymers.  The routine came with NO WARRANTY! Use at your own risk.
@@ -61,7 +61,7 @@ vector<double>  F(vector<double> &x,vector<double> &y,vector<double> &z);
 vector<double> all_distance_smoothed(vector<double> &distancematrix, double sigma);
 double is_minimum(int m,int n,vector<double> &distancematrix);
 vector<vector<pair<int,int> > > find_branches(vector<double> &distancematrix);
-double get_writhe(int pos1,int pos2,vector<double> &x,vector<double> &y,vector<double> &z);//Evaluate write for the subchain with pos1<=i<=pos2. I.e. pos1=0, pos2=N => full chain. if pos1>pos2 => take subchain from pos1 to 0 and from 0 to pos2. 
+double get_writhe(int pos1,int pos2,vector<double> &x,vector<double> &y,vector<double> &z);
 void get_writhe_new(vector<int> half_windows_sizes,const vector<double> &x,const vector<double> &y,const vector<double> &z,vector<vector<double> > & writhe);
 double get_twist(int pos1, int pos2, vector <double> &chain_x, vector <double> &chain_y, vector <double> &chain_z, vector <double> &ph_x, vector <double> &ph_y, vector <double> &ph_z, vector <double> &th_x, vector <double> &th_y, vector <double> &th_z);
 void average_sigma(vector <double> &avect, double &average, double&sigma);
@@ -76,24 +76,6 @@ extern "C" void dsyev_( char* jobz, char* uplo, long int* n, double* a, long int
 int prol_asph(vector<double> & x,vector<double> & y,vector<double> & z, double &prolactness, double &asphericity, double &sq_radius_gyr);
 
 
-///////////////////////////////////////////////////////////////////////////////////////////
-
-template <class T>
-string num_to_str(T a)
-{
-   ostringstream sstream;
-   sstream<<a;
-    return sstream.str();
-}
-
-
-double pitagora(double a, double b, double c)
-{
-  double v= pow(a*a + b*b +c*c, 0.5);
-  return v;
-}
-
-
 // these routine assume that we have several frames and that the coordinate
 // are stored in a single, one-dimensional, array. So, to correctly get
 // the x y z coordinate of a certain atom we have to play with the indexes
@@ -103,13 +85,35 @@ double pitagora(double a, double b, double c)
 
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// convert a number to a string
+template <class T>
+string num_to_str(T a)
+{
+   ostringstream sstream;
+   sstream<<a;
+    return sstream.str();
+}
+
+// pitagora formula
+double pitagora(double a, double b, double c)
+{
+  double v= pow(a*a + b*b +c*c, 0.5);
+  return v;
+}
+
+
 double Bound(double val, double min,double max){return (val<min)?min:((val>max)?max:val);}
 
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3)
 {return ((x2*y3-x3*y2)*z1+(x3*y1-x1*y3)*z2+(x1*y2-x2*y1)*z3);}
 
 
-
+/*Using auxiliary beads it calculate the twist of a given chain.
+Chain_x _y _z contain the coordinates of the real beads of the polymer.  ph_x _y _z contain the auxiliary beads.
+This routine should be applied only when the coordinate frame is overlapped with a real bead, i.e. one virtual bead for every real bead
+*/
 double twist_of_frame(double *chain_x, double *chain_y, double *chain_z, double *ph_x, double *ph_y, double *ph_z, long NbSegments)
   {//needs the portion of the chain on which we want to calculate the twist in chain_x,y,z 
    //and the corresponding portion of phanom chain ph_x,y,z!
@@ -212,6 +216,11 @@ double twist_of_frame(double *chain_x, double *chain_y, double *chain_z, double 
   }
 
 
+/*Using auxiliary beads it calculate the twist of a given chain.
+Chain_x _y _z contain the coordinates of the real beads of the polymer.  ph_x _y _z contain the middle auxiliary beads.
+th_x _y _z cointain the coordinates of the out of axis beads.
+This routine should be applied only when the coordinate frame is overlapped with a real bead, i.e. one virtual bead for every real bead
+*/
 double twist_of_frame(double *chain_x, double *chain_y, double *chain_z, double *ph_x, double *ph_y, double *ph_z, double *th_x, double *th_y, double *th_z, long NbSegments)
   {//needs the portion of the chain on which we want to calculate the twist in chain_x,y,z 
    //and the corresponding portion of phanom chain ph_x,y,z!
@@ -606,12 +615,12 @@ double sum=0.0, temp, xn, yn, zn;
   yn=alval[current_frame*num_atoms*3 + j*3+1];
   zn=alval[current_frame*num_atoms*3 + j*3+2];
   temp=pitagora(xn-cm_pos[0],yn-cm_pos[1],zn-cm_pos[2]);
-  sum+= temp;
+  sum+= temp*temp;
   }
 
   sum/=num_atoms;
 
-  return sum;
+  return sqrt(sum);
 }
 
 // calculate the radius of gyration for a molecule in a frame
