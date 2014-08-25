@@ -602,7 +602,8 @@ for(long g=0; g<length_section;++g)
 }
 
 
-// calculate the radius of gyration for a frame
+// calculate the radius of gyration for a frame  formulas from: http://en.wikipedia.org/wiki/Radius_of_gyration
+// the value is root_squared
 double radius_gyration(long current_frame, long num_atoms, double *alval){
 
 double cm_pos[3];
@@ -624,7 +625,8 @@ double sum=0.0, temp, xn, yn, zn;
 }
 
 // calculate the radius of gyration for a molecule in a frame
-// we should imagine a system made of several molecules
+// here we use "start" and "end" to compute the Rg of chunks of a molecule or different molecules
+// the value is root_squared
 double radius_gyration(long current_frame, long num_atoms, double *alval, long start, long end){
 
 double cm_pos[3];
@@ -822,7 +824,7 @@ for(long numf=0; numf<num_frames;++numf){
 
 void observable_tstat(vector <vector <double> > &all_data, vector <string> nameobs, long current_f){
 Tstatistic temp;
-//cout<<"DONE UP TO HERE"<<endl;
+
 vector <Tstatistic> all_obs;
 ifstream infile;
 infile.open("all_stats.txt");
@@ -831,7 +833,6 @@ if(infile){  //if the file exist we need to read from the file the status of eac
   
   infile>>temp;
   all_obs.push_back(temp);  // all_obs contain a certain number of Tstatistic initialized from file
-//  cout<<"DONE UP TO HERE 2.01"<<endl;
  }
    
   if(all_data.size()!=all_obs.size())
@@ -847,7 +848,7 @@ if(infile){  //if the file exist we need to read from the file the status of eac
 else{  // if there IS NOT a previous state we need to create the Tstatistc from the data, and append it to all_obs
   for(long i=0;i<all_data.size();++i)
   { 
-//    cout<<"DONE UP TO HERE 2.05"<<endl;
+
     Tstatistic temp2;
     for(long j=0;j<all_data[i].size();++j)
     {  
@@ -948,14 +949,6 @@ void write_CM(long start, long end, long num_frames, long num_atoms, double epsi
 // initialize a single block of memory to store the contact map matrix
 long sizem=end-start;
 
-//cout<<"continue 0"<<endl;
-//cout<<"size of wanted map: "<<sizem<<endl;
-
-//double** map= new double*[sizem];
-//map[0]= new double[sizem*sizem];
-//  for (long i=1; i<sizem;++i)
-//    map[i]=map[0]+ i*sizem;
-
 vector <vector <double> > map;
 for(long j=0;j<sizem;++j){
     vector <double> temp;
@@ -966,20 +959,13 @@ for(long j=0;j<sizem;++j){
     temp.clear();
 }
 
-
-//cout<<"continue 1"<<endl;
 timeval t1, t2;
 double elapsedTime;
 
 //start timer
-gettimeofday(&t1, NULL);
-cout<<"Calculating the contact map..."<<endl;
-// zeroing the map
-//for(long j=0;j<sizem;++j)
-//   for(long i=0;i<sizem;++i)
-//     map[j][i]=0.0;
-
-//  cout<<"continue 2"<<endl;  
+//gettimeofday(&t1, NULL);
+//cout<<"Calculating the contact map..."<<endl;
+ 
   string eps_str = num_to_str(epsilon);
   string namef="contactmap_eps_"+eps_str+".txt";
   infile.open(namef.c_str(), ios::in);
@@ -994,8 +980,7 @@ cout<<"Calculating the contact map..."<<endl;
        }
 
      }
-  infile.close(); infile.clear();
-//    cout<<"continue 3"<<endl;  
+  infile.close(); infile.clear(); 
      #pragma omp parallel for shared(map)
      for(long i=start; i<end;++i){
       for(long j=0;j<num_frames;++j){
@@ -1010,7 +995,7 @@ cout<<"Calculating the contact map..."<<endl;
        }
       }
      }
-//  cout<<"continue 4"<<endl;  
+ 
   outfile.open(namef.c_str());
   outfile.precision(12);
   for(long i=0; i<sizem;++i)
@@ -1021,12 +1006,12 @@ cout<<"Calculating the contact map..."<<endl;
   }
   outfile.close();  outfile.clear();
 
-// stop timer
-gettimeofday(&t2, NULL);
+//// stop timer
+//gettimeofday(&t2, NULL);
 
 // compute and print the elapsed time in millisec
-elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;
-cout<<"Time to calculate the map in millisec: "<<elapsedTime<<endl;
+//elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;
+//cout<<"Time to calculate the map in millisec: "<<elapsedTime<<endl;
 
 
 vector <double> avevals;
@@ -1049,8 +1034,6 @@ for(long j=0;j<sizem;++j){
  temp.clear();
  }
 
-// delete [] map[0];
-// delete []map;
 for(long i=0;i<map.size();++i)
     map[i].clear();
 map.clear();
@@ -1194,10 +1177,11 @@ return size % 2 ? a[size/2] : (a[size/2 - 1] + a[size/2])/2.0;
 
 }
 
+
+// check if two beads A B that belong to a chain, in a periodic box, get in contact with the periodic copies B A 
 //chain x,y,z contain the coordinates of the (real) beads of the chain for all the frames
 //pos1 and pos2 are the index of the special sites
 //natoms is the size of the ring
-
 void check_periodic_contact(double *chainx, double *chainy, double *chainz, long natoms, long num_frames, double sizebox_x, double sizebox_y, double sizebox_z, int pos1, int pos2, long &real_contact_count, long &periodic_contact_count, double epsilon)
 {
   for(int nf=0;nf<num_frames;++nf){
@@ -1239,7 +1223,8 @@ void check_periodic_contact(double *chainx, double *chainy, double *chainz, long
 }
 
 
-
+/* Generate the distance matrix for a given chain x,y,z.  Putting in every cell between bead_i and bead_j
+the value of their distance */
 vector<double> get_distance_matrix(vector<double> & x,vector<double> & y,vector<double> & z)
 {
   int N=x.size();
