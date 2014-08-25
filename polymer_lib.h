@@ -637,12 +637,12 @@ double sum=0.0, temp, xn, yn, zn;
   yn=alval[current_frame*num_atoms*3 + j*3+1];
   zn=alval[current_frame*num_atoms*3 + j*3+2];
   temp=pitagora(xn-cm_pos[0],yn-cm_pos[1],zn-cm_pos[2]);
-  sum+= temp;
+  sum+= temp*temp;
   }
 
   sum/=float(end-start);
 
-  return sum;
+  return sqrt(sum);
 }
 
 
