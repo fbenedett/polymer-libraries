@@ -48,7 +48,7 @@ double ave_frame_distace(long num_frames, long num_atoms, long index_atom_refere
 double radius_gyration(long current_frame, long num_atoms, double *alval);
 double radius_gyration(long current_frame, long num_atoms, double *alval, long start, long end);
 void all_radius_gyration(long num_frames, long num_atoms, double *alval, vector<double> *storev);
-void stat_end_to_end(long num_frames, long num_atoms, double *data, vector <double> *end_to_end_dist);
+double end_to_end_distance(vector <double> &x, vector <double> &y, vector <double> &z, int window, bool circular=false);
 void remap_part(double *chainx, double *chainy, double *chainz, long natoms, double sizebox_x, double sizebox_y, double sizebox_z);
 void remap_noboundary(double *data, long num_frames, long num_atoms);
 void remap_noboundary(double *data, long num_frames, long num_atoms, double sizebox_x, double sizebox_y, double sizebox_z);
@@ -64,6 +64,7 @@ vector<vector<pair<int,int> > > find_branches(vector<double> &distancematrix);
 double get_writhe(int pos1,int pos2,vector<double> &x,vector<double> &y,vector<double> &z);
 void get_writhe_new(vector<int> half_windows_sizes,const vector<double> &x,const vector<double> &y,const vector<double> &z,vector<vector<double> > & writhe);
 double get_twist(int pos1, int pos2, vector <double> &chain_x, vector <double> &chain_y, vector <double> &chain_z, vector <double> &ph_x, vector <double> &ph_y, vector <double> &ph_z, vector <double> &th_x, vector <double> &th_y, vector <double> &th_z);
+void average(vector <double> &avect, double &avev);
 void average_sigma(vector <double> &avect, double &average, double&sigma);
 void average_bead(vector <double> &matrix_d, int window, double &average, double &sigma);
 vector<vector<pair<int,int> > > shorten_branches(vector<vector<pair<int,int> > > & branches,vector<double> &x,vector<double> &y,vector<double> &z);
@@ -648,28 +649,41 @@ double sum=0.0, temp, xn, yn, zn;
 }
 
 
-// calculate the average end to end distance for a polymer (it should be a linear one)
-// and store the results in a vector
-void stat_end_to_end(long num_frames, long num_atoms, double *data, vector <double> *end_to_end_dist)
+double end_to_end_distance(vector <double> &x, vector <double> &y, vector <double> &z, int window, bool circular)
 {
-long maxcorr=num_atoms*0.75;
-vector <double> temp;
 
 
-  for(long j=1; j<maxcorr;++j){
-   for(long f=0; f<num_frames;++f){
-    for(long i=0; i<num_atoms-j; ++i){
-     double v;
-     v=distance(f, num_atoms, i, i+j, data);
-     temp.push_back( v*v );
-    }
-   }
-    double res=accumulate(temp.begin(), temp.end(),0.0);
-    end_to_end_dist->push_back(sqrt(res/temp.size())  );
-    temp.clear();
-  }
-
+int N=x.size();
+if(window<=0 && window>N){
+cout<<"Error, windows should be at least bigger than zero and small than the size of the polymer."<<endl;
+return sqrt(-1);  //not a number
 }
+
+
+vector <double> temp;
+double dval;
+if(circular){
+  for(int i=0; i<N; ++i){
+   dval=pitagora(x[i]-x[(i+window)%N], y[i]-y[(i+window)%N], z[i]-z[(i+window)%N]);
+   dval*=dval;
+   temp.push_back(dval);
+  }
+}
+else{
+  for(int i=0; i<N-window; ++i){
+   dval=pitagora(x[i]-x[(i+window)%N], y[i]-y[(i+window)%N], z[i]-z[(i+window)%N]);
+   dval*=dval;
+   temp.push_back(dval);
+  }
+}
+double avev;
+average(temp, avev);
+
+return avev;
+}
+ 
+
+
 
 // remap a part of the chain to remove the boundary conditions starting from the first value
 void remap_part(double *chainx, double *chainy, double *chainz, long natoms, double sizebox_x, double sizebox_y, double sizebox_z)
@@ -1944,14 +1958,16 @@ for(int i=0; i<nbeads; ++i){
 
 }
 
-
-void average_sigma(vector <double> &avect, double &average, double&sigma){
-
+void average(vector <double> &avect, double &avev){
 double sum = std::accumulate(avect.begin(), avect.end(), 0.0);
-average = sum / avect.size();
+avev = sum / avect.size();
+}
+
+void average_sigma(vector <double> &avect, double &avev, double&sigma){
+average(avect,avev);
 
 double sq_sum = inner_product(avect.begin(), avect.end(), avect.begin(), 0.0);
-sigma = sqrt(sq_sum / avect.size() - average * average);
+sigma = sqrt(sq_sum / avect.size() - avev * avev);
 
 
 }
