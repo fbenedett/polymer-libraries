@@ -37,7 +37,9 @@ double getx(long current_frame, long num_atoms, long atom_num1, double *alval);
 double gety(long current_frame, long num_atoms, long atom_num1, double *alval);
 double getz(long current_frame, long num_atoms, long atom_num1, double *alval);
 void get_vector(long atom_num, long num_atoms, long current_frame, double *res, double *alval);
-double calc_scalarp(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
+double norm_scalarp(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
+double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
+double scalar_prod(double x, double y, double z, double x1, double y1, double z1);
 double calc_bending_en(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
 void frames_atoms_size(string filename, long &f_num, long &a_num);
 double error_bar(double *data, long size);
@@ -47,15 +49,14 @@ void center_mass_xyz(long current_frame, long num_atoms, long start, long end, d
 double ave_frame_distace(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results);
 double radius_gyration(long current_frame, long num_atoms, double *alval);
 double radius_gyration(long current_frame, long num_atoms, double *alval, long start, long end);
-void all_radius_gyration(long num_frames, long num_atoms, double *alval, vector<double> *storev);
-double end_to_end_distance(vector <double> &x, vector <double> &y, vector <double> &z, int window, bool circular=false);
+double end_to_end_distance(vector <double> &x, vector <double> &y, vector <double> &z, int window, bool circular);
 void remap_part(double *chainx, double *chainy, double *chainz, long natoms, double sizebox_x, double sizebox_y, double sizebox_z);
 void remap_noboundary(double *data, long num_frames, long num_atoms);
 void remap_noboundary(double *data, long num_frames, long num_atoms, double sizebox_x, double sizebox_y, double sizebox_z);
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3);
 void observable_tstat(vector <vector <double> > &all_data, vector <string> nameobs, long current_f);
 void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data);
-double median(vector <double> &a);
+
 void check_periodic_contact(double *chainx, double *chainy, double *chainz, long natoms, long num_frames, double sizebox_x, double sizebox_y, double sizebox_z, int pos1, int pos2, long &real_contact_count, long &periodic_contact_count, double epsilon);
 vector<double>  F(vector<double> &x,vector<double> &y,vector<double> &z);
 vector<double> all_distance_smoothed(vector<double> &distancematrix, double sigma);
@@ -64,7 +65,9 @@ vector<vector<pair<int,int> > > find_branches(vector<double> &distancematrix);
 double get_writhe(int pos1,int pos2,vector<double> &x,vector<double> &y,vector<double> &z);
 void get_writhe_new(vector<int> half_windows_sizes,const vector<double> &x,const vector<double> &y,const vector<double> &z,vector<vector<double> > & writhe);
 double get_twist(int pos1, int pos2, vector <double> &chain_x, vector <double> &chain_y, vector <double> &chain_z, vector <double> &ph_x, vector <double> &ph_y, vector <double> &ph_z, vector <double> &th_x, vector <double> &th_y, vector <double> &th_z);
+double get_linking(vector<double> &x,vector<double> &y,vector<double> &z, vector<double> &xs,vector<double> &ys,vector<double> &zs);
 void average(vector <double> &avect, double &avev);
+double median(vector <double> &a);
 void average_sigma(vector <double> &avect, double &average, double&sigma);
 void average_bead(vector <double> &matrix_d, int window, double &average, double &sigma);
 vector<vector<pair<int,int> > > shorten_branches(vector<vector<pair<int,int> > > & branches,vector<double> &x,vector<double> &y,vector<double> &z);
@@ -107,6 +110,7 @@ double pitagora(double a, double b, double c)
 
 double Bound(double val, double min,double max){return (val<min)?min:((val>max)?max:val);}
 
+// cross product between X and Y then multiplied by Z
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3)
 {return ((x2*y3-x3*y2)*z1+(x3*y1-x1*y3)*z2+(x1*y2-x2*y1)*z3);}
 
@@ -437,7 +441,8 @@ res[1]=dy;
 res[2]=dz;
 }
 
-double calc_scalarp(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval)
+
+double norm_scalarp(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval)
 {
 double v1[3], v2[3], norm1, norm2;
 get_vector(atom_num1, num_atoms, current_frame, v1, alval);
@@ -450,6 +455,23 @@ return  ( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] )/(norm1*norm2);
 
 }
 
+
+double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval)
+{
+double v1[3], v2[3], norm1, norm2;
+get_vector(atom_num1, num_atoms, current_frame, v1, alval);
+get_vector(atom_num2, num_atoms, current_frame, v2, alval);
+
+return  ( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] );
+
+}
+
+
+double scalar_prod(double x, double y, double z, double x1, double y1, double z1){
+return ( x*x1 +y*y1 + z*z1 );
+}
+
+
 double calc_bending_en(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval)
 {
 double v=0, t=0;
@@ -457,12 +479,12 @@ ofstream outfile;
 
 for(long i=atom_num1;i<atom_num2-1;++i)
 {
- t=calc_scalarp(i, i+1, num_atoms, current_frame, alval);
+ t=norm_scalarp(i, i+1, num_atoms, current_frame, alval);
  if (t>1.0){
   cout<<"error, scalar product is bigger than 1 for the atoms: "<<i<<" and "<<i+1<<endl;
   return 0;
  }
- t=  acos(calc_scalarp(i, i+1, num_atoms, current_frame, alval));
+ t=  acos(norm_scalarp(i, i+1, num_atoms, current_frame, alval));
  v+=t*t;
 }
 
@@ -1054,6 +1076,7 @@ map.clear();
 
 namef="1D_contactmap_eps"+eps_str+".txt";
 outfile.open(namef.c_str());
+outfile.precision(12);
 outfile<<"Distance Average Std_dev_av Median"<<endl;
 for(long i=0;i<avevals.size();++i)
  outfile<<i<<" "<<avevals[i]<<" "<<stdvals_mean[i]<<endl;
@@ -1180,15 +1203,6 @@ for(int f=0;f<num_frames;++f){
 //return twist/(2.0*Pi);
   }
   outfile.close(); 
-}
-
-
-double median(vector <double> &a)
-{
-int size=a.size();
-sort(a.begin(),a.begin()+size);
-return size % 2 ? a[size/2] : (a[size/2 - 1] + a[size/2])/2.0;
-
 }
 
 
@@ -1334,8 +1348,6 @@ double is_minimum(int m,int n,vector<double> & distancematrix)
   d0=distancematrix[m*N+n];
   d1=distancematrix[((m+1)%N)*N + (n+1)%N];
   d2=distancematrix[((m-1+N)%N)*N + (n-1+N)%N];
- //d1=get_distance_smoothed(m,n,x,y,z,kernel)-get_distance_smoothed((m+1)%N,(n+1)%N,x,y,z,kernel);
- //d2=get_distance_smoothed(m,n,x,y,z,kernel)-get_distance_smoothed((m-1+N)%N,(n-1+N)%N,x,y,z,kernel);
   if(d0-d1>d0-d2)
     return d0-d1;
   return d0-d2;
@@ -1963,13 +1975,19 @@ double sum = std::accumulate(avect.begin(), avect.end(), 0.0);
 avev = sum / avect.size();
 }
 
+
+double median(vector <double> &a)
+{
+int size=a.size();
+sort(a.begin(),a.begin()+size);
+return size % 2 ? a[size/2] : (a[size/2 - 1] + a[size/2])/2.0;
+}
+
 void average_sigma(vector <double> &avect, double &avev, double&sigma){
 average(avect,avev);
 
 double sq_sum = inner_product(avect.begin(), avect.end(), avect.begin(), 0.0);
 sigma = sqrt(sq_sum / avect.size() - avev * avev);
-
-
 }
 
 
@@ -2190,6 +2208,94 @@ void orientation(double *data, int currentf, int total_last_frame, int num_atoms
  delete []nn; delete []ll;
 
 }
+
+
+
+
+
+
+double get_linking(vector<double> &x,vector<double> &y,vector<double> &z, vector<double> &xs,vector<double> &ys,vector<double> &zs)
+{
+  double ZERO=1e-10;
+  int N=x.size();
+  int Ns=xs.size();
+
+  double Linking=0;
+
+  #pragma omp parallel for reduction(+:Linking)
+  for(int i1=0;i1<N;i1++)
+  {
+    int j1,j2;
+    double norme;
+    double r13x,r13y,r13z;
+    double r14x,r14y,r14z;
+    double r24x,r24y,r24z;
+    double r23x,r23y,r23z;
+    double r34x,r34y,r34z;
+    double r12x,r12y,r12z;
+    double n1x,n1y,n1z;   
+    double n2x,n2y,n2z;   
+    double n3x,n3y,n3z;   
+    double n4x,n4y,n4z;   
+    double n5x,n5y,n5z;  
+
+    j1=(i1+1)%N;
+
+	  r12x=x[j1]-x[i1];
+	  r12y=y[j1]-y[i1];
+	  r12z=z[j1]-z[i1];
+
+    for(int i2=0;i2<Ns;i2++)
+	  {
+	  j2=(i2+1)%Ns;
+	  r13x=xs[i2]  -x[i1];
+	  r13y=ys[i2]  -y[i1];
+	  r13z=zs[i2]  -z[i1];
+	  r14x=xs[j2]-x[i1];
+	  r14y=ys[j2]-y[i1];
+	  r14z=zs[j2]-z[i1];
+	  r24x=xs[j2]-x[j1];
+	  r24y=ys[j2]-y[j1];
+	  r24z=zs[j2]-z[j1];
+	  r23x=xs[i2]  -x[j1];
+	  r23y=ys[i2]  -y[j1];
+	  r23z=zs[i2]  -z[j1];
+
+	  r34x=xs[j2]-xs[i2];
+	  r34y=ys[j2]-ys[i2];
+	  r34z=zs[j2]-zs[i2];
+
+
+	  n1x=r13y*r14z-r13z*r14y; n1y=r13z*r14x-r13x*r14z; n1z=r13x*r14y-r13y*r14x;
+	  norme=sqrt(n1x*n1x+n1y*n1y+n1z*n1z);
+	  if(norme>ZERO){n1x=n1x/norme; n1y=n1y/norme; n1z=n1z/norme;}
+		    
+	      n2x=r14y*r24z-r14z*r24y; n2y=r14z*r24x-r14x*r24z; n2z=r14x*r24y-r14y*r24x;
+	      norme=sqrt(n2x*n2x+n2y*n2y+n2z*n2z);
+	      if(norme>ZERO){n2x=n2x/norme; n2y=n2y/norme; n2z=n2z/norme;}
+		  
+	      n3x=r24y*r23z-r24z*r23y; n3y=r24z*r23x-r24x*r23z; n3z=r24x*r23y-r24y*r23x;
+	      norme=sqrt(n3x*n3x+n3y*n3y+n3z*n3z);
+	      if(norme>ZERO){n3x=n3x/norme; n3y=n3y/norme; n3z=n3z/norme;}
+		  
+	      n4x=r23y*r13z-r23z*r13y; n4y=r23z*r13x-r23x*r13z; n4z=r23x*r13y-r23y*r13x;
+	      norme=sqrt(n4x*n4x+n4y*n4y+n4z*n4z);
+	      if(norme>ZERO){n4x=n4x/norme; n4y=n4y/norme; n4z=n4z/norme;}
+		  
+	      n5x=r34y*r12z-r34z*r12y; n5y=r34z*r12x-r34x*r12z; n5z=r34x*r12y-r34y*r12x;
+	      if(n5x*r13x+n5y*r13y+n5z*r13z > ZERO)
+		{
+		    Linking += -(asin(Bound(n1x*n2x+n1y*n2y+n1z*n2z,-1,1))+asin(Bound(n2x*n3x+n2y*n3y+n2z*n3z,-1,1))+asin(Bound(n3x*n4x+n3y*n4y+n3z*n4z,-1,1))+asin(Bound(n4x*n1x+n4y*n1y+n4z*n1z,-1,1)))/(2*M_PI);
+		}
+	      else if (n5x*r13x+n5y*r13y+n5z*r13z < -ZERO)
+		{
+		    Linking += (asin(Bound(n1x*n2x+n1y*n2y+n1z*n2z,-1,1))+asin(Bound(n2x*n3x+n2y*n3y+n2z*n3z,-1,1))+asin(Bound(n3x*n4x+n3y*n4y+n3z*n4z,-1,1))+asin(Bound(n4x*n1x+n4y*n1y+n4z*n1z,-1,1)))/(2*M_PI);
+		}		    
+	    }
+	}
+  return -Linking/2;
+}
+
 
 
 
