@@ -54,6 +54,7 @@ void remap_part(double *chainx, double *chainy, double *chainz, long natoms, dou
 void remap_noboundary(double *data, long num_frames, long num_atoms);
 void remap_noboundary(double *data, long num_frames, long num_atoms, double sizebox_x, double sizebox_y, double sizebox_z);
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3);
+void crossprod(double x, double y, double z, double x1, double y1, double z1, double *res);
 void observable_tstat(vector <vector <double> > &all_data, vector <string> nameobs, long current_f);
 void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data);
 
@@ -110,9 +111,16 @@ double pitagora(double a, double b, double c)
 
 double Bound(double val, double min,double max){return (val<min)?min:((val>max)?max:val);}
 
-// cross product between X and Y then multiplied by Z
+// cross product between vector (x1,x2,x3) and (y1,y2,y3) then multiplied by (z1,z2,z3)
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3)
 {return ((x2*y3-x3*y2)*z1+(x3*y1-x1*y3)*z2+(x1*y2-x2*y1)*z3);}
+
+
+void crossprod(double x, double y, double z, double x1, double y1, double z1, double *res){
+res[0]=y*z1 - z*y1;
+res[1]=z*x1 - x*z1;
+res[2]=x*y1 - y*z1;
+}
 
 
 /*Using auxiliary beads it calculate the twist of a given chain.
