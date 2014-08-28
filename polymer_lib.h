@@ -39,7 +39,7 @@ double getz(long current_frame, long num_atoms, long atom_num1, double *alval);
 void get_vector(long atom_num, long num_atoms, long current_frame, double *res, double *alval);
 double norm_scalarp(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
 double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
-double scalar_prod(double x, double y, double z, double x1, double y1, double z1);
+double scalar_prod(double x, double y, double z, double x1, double y1, double z1, bool norm);
 double calc_bending_en(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
 void frames_atoms_size(string filename, long &f_num, long &a_num);
 double error_bar(double *data, long size);
@@ -466,7 +466,7 @@ return  ( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] )/(norm1*norm2);
 
 double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval)
 {
-double v1[3], v2[3], norm1, norm2;
+double v1[3], v2[3];
 get_vector(atom_num1, num_atoms, current_frame, v1, alval);
 get_vector(atom_num2, num_atoms, current_frame, v2, alval);
 
@@ -475,8 +475,11 @@ return  ( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] );
 }
 
 
-double scalar_prod(double x, double y, double z, double x1, double y1, double z1){
-return ( x*x1 +y*y1 + z*z1 );
+double scalar_prod(double x, double y, double z, double x1, double y1, double z1, bool norm){
+if (norm==true)
+ return ( x*x1 +y*y1 + z*z1 )/(pitagora(x,y,z)+pitagora(x1,y1,z1))  ;
+else
+ return ( x*x1 +y*y1 + z*z1 );
 }
 
 
