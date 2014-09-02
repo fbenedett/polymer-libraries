@@ -477,7 +477,7 @@ return  ( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] );
 
 double scalar_prod(double x, double y, double z, double x1, double y1, double z1, bool norm){
 if (norm==true)
- return ( x*x1 +y*y1 + z*z1 )/(pitagora(x,y,z)+pitagora(x1,y1,z1))  ;
+ return ( x*x1 +y*y1 + z*z1 )/(pitagora(x,y,z)*pitagora(x1,y1,z1))  ;
 else
  return ( x*x1 +y*y1 + z*z1 );
 }
