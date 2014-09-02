@@ -1907,10 +1907,13 @@ int prol_asph(vector<double> & x,vector<double> & y,vector<double> & z, double &
 
   /* Query and allocate the optimal workspace */
   lwork = -1;
-   char *nn=new char[1];
-   char *ll=new char[1];
-   strcpy(nn,"N");
-   strcpy(ll,"L");
+  string nns="N";
+  char *nn=new char[nns.length()+1];
+  strcpy(nn,nns.c_str());
+
+  string lls="L";
+  char *ll=new char[lls.length()+1];
+  strcpy(ll,lls.c_str());
   
   
   dsyev_( nn, ll, &n, inertia_1D, &lda, w, &wkopt, &lwork, &info );
@@ -2007,10 +2010,14 @@ void orientation(double *data, int currentf, int total_last_frame, int num_atoms
   int coord=3;
   double *Sab=new double[coord*coord]; for(int i=0; i< coord*coord;++i) Sab[i]=0;
   double inertia[coord][coord];
-  char *nn=new char[1];
-  char *ll=new char[1];
-  strcpy(nn,"V");
-  strcpy(ll,"L");
+  string nns="V";
+  char *nn=new char[nns.length()+1];
+  strcpy(nn,nns.c_str());
+
+  string lls="L";
+  char *ll=new char[lls.length()+1];
+  strcpy(ll,lls.c_str());
+
   /* Locals */
   long int n = coord, lda = coord, info, lwork;
   double wkopt;
