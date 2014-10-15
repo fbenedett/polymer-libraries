@@ -119,7 +119,7 @@ double threeprod(double x1, double x2, double x3, double y1, double y2, double y
 void crossprod(double x, double y, double z, double x1, double y1, double z1, double *res){
 res[0]=y*z1 - z*y1;
 res[1]=z*x1 - x*z1;
-res[2]=x*y1 - y*z1;
+res[2]=x*y1 - y*x1;
 }
 
 
