@@ -42,8 +42,8 @@ double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_
 double scalar_prod(double x, double y, double z, double x1, double y1, double z1, bool norm);
 double calc_bending_en(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
 void frames_atoms_size(string filename, long &f_num, long &a_num);
-double error_bar(double *data, long size);
 void load_matrix(double *data, long num_atoms, long num_frames);
+double error_bar(double *data, long size);
 double distance(long current_frame, long num_atoms, long atom_num1, long atom_num2, double *alval);
 void center_mass_xyz(long current_frame, long num_atoms, long start, long end, double *res, double *alval);
 double ave_frame_distace(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results);
@@ -505,21 +505,75 @@ for(long i=atom_num1;i<atom_num2-1;++i)
 
 void frames_atoms_size(string filename, long &f_num, long &a_num)
 {
-  long num_frames, num_atoms;
+  string headt1="Num_of_atoms", temp1;
+  long num_frames=0, num_atoms=0;
   ifstream infile;
   infile.open(filename.c_str());
   string s;
-  infile>>s; //first part is only  title
+  infile>>temp1; //first part will identify the file
+
+  // old file format were starting with "Num_of_atoms"
+  if(temp1.compare(headt1)==0){
   infile>>num_atoms; // this is the number
   cout<<"Num of atoms: "<<num_atoms<<endl;
+  // here the two formats that we use differ, one doesn't have "Num_of_frames", the other has it
   infile>>s;
   infile>>num_frames;
   cout<<"Num of frames: "<<num_frames<<endl;
-  infile.close();  infile.clear();
   f_num=num_frames;
   a_num=num_atoms;
+  }
+
+  // new file format start with an integer number that give the number of atoms
+  else{
+  a_num=atof(temp1.c_str());
+  long cf=0;
+  while(getline(infile,s))
+   cf++;
+   
+  f_num=cf/a_num;
+  }
+  
+  infile.close();  infile.clear();
+}
+
+
+void load_matrix(double *data, string namefile)
+{
+ifstream infile;
+long num_atoms, num_frames;
+vector <double> datav;
+string s, head1="Num_of_atoms";
+infile.open(namefile.c_str());
+infile>>s; //in the file this is a string that declare the name of the variable, "num_atoms"
+ if(s.compare(head1)==0){
+  infile>>num_atoms;
+  infile>>s; //in the file this is a string that declare the name of the variable, "num_frames"
+  infile>>num_frames;
+  
+  // we reformat the input file
+  long i=0;
+  while(infile>>s){
+    s.erase(remove(s.begin(), s.end(), '{'), s.end()); 
+    s.erase(remove(s.begin(), s.end(), '}'), s.end());
+    data[i]=(atof( s.c_str() ));
+    i++;
+  }
+ }  
+ else{
+
+  long i=0;
+  while(infile>>s && !infile.eof()){
+   data[i]=atof(s.c_str());
+   i++;
+  }
+ }
+
+infile.close(); infile.clear();
 
 }
+
+
 
 
 double error_bar(double *data, long size)
@@ -535,31 +589,6 @@ long k=statx.Get_koptimal();
 // cout<<k<<" "<<statx.GetBinLength(k)<<" "<<statx.GetNbBins(k)<<" "<<statx.GetAverage(k)<<" "<<statx.GetMeanSquare(k)<<" "<<statx.GetCorrelation(k)<<"\n";
 
  return statx.GetMeanSquare(k);
-
-}
-
-
-void load_matrix(double *data, string namefile)
-{
-ifstream infile;
-string s;
-infile.open(namefile.c_str());
-infile>>s; //in the file this is a string that declare the name of the variable, "num_atoms"
-long num_atoms, num_frames;
-infile>>num_atoms;
-infile>>s; //in the file this is a string that declare the name of the variable, "num_frames"
-infile>>num_frames;
-
-// we reformat the input file
-long i=0;
-while(infile>>s){
-  s.erase(remove(s.begin(), s.end(), '{'), s.end()); 
-  s.erase(remove(s.begin(), s.end(), '}'), s.end());
-  data[i]=atof( s.c_str() );
-  i++;
-  }
-infile.close(); infile.clear();
-
 
 }
 
