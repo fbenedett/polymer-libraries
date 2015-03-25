@@ -1,3 +1,8 @@
+#ifndef SASA_ALGO_LIB_INCLUDED
+#define SASA_ALGO_LIB_INCLUDED
+
+
+
 #include "polymer_lib.h"
 /*
 Algorithm to measure the Accessible surface area
@@ -186,3 +191,8 @@ int measure_sasa(vector <double> &x, vector <double> &y, vector <double> &z, dou
 
    return 1;
 }
+
+
+
+
+#endif

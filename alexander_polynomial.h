@@ -3,6 +3,10 @@
 /// 2014
 
 
+#ifndef ALEXANDER_POLYNOMIAL_LIB_INCLUDED
+#define ALEXANDER_POLYNOMIAL_LIB_INCLUDED
+
+
 #include "polymer_lib.h"
 #include "limits.h"
 #include "float.h"
@@ -3587,3 +3591,7 @@ for(int i=0; i<maxknot; ++i){
   
   return s;
 }
+
+
+
+#endif
