@@ -42,7 +42,7 @@ double scalar_prod(long atom_num1, long atom_num2, long num_atoms, long current_
 double scalar_prod(double x, double y, double z, double x1, double y1, double z1, bool norm);
 double calc_bending_en(long atom_num1, long atom_num2, long num_atoms, long current_frame, double *alval);
 void frames_atoms_size(string filename, long &f_num, long &a_num);
-void load_matrix(double *data, long num_atoms, long num_frames);
+void load_matrix(double *data, string namefile);
 double error_bar(double *data, long size);
 double distance(long current_frame, long num_atoms, long atom_num1, long atom_num2, double *alval);
 void center_mass_xyz(long current_frame, long num_atoms, long start, long end, double *res, double *alval);
