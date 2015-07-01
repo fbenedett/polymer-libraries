@@ -56,7 +56,7 @@ void remap_noboundary(double *data, long num_frames, long num_atoms, double size
 double threeprod(double x1, double x2, double x3, double y1, double y2, double y3, double z1, double z2, double z3);
 void crossprod(double x, double y, double z, double x1, double y1, double z1, double *res);
 void observable_tstat(vector <vector <double> > &all_data, vector <string> nameobs, long current_f);
-void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data);
+void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data, string add_name="");
 
 void check_periodic_contact(double *chainx, double *chainy, double *chainz, long natoms, long num_frames, double sizebox_x, double sizebox_y, double sizebox_z, int pos1, int pos2, long &real_contact_count, long &periodic_contact_count, double epsilon);
 vector<double>  F(vector<double> &x,vector<double> &y,vector<double> &z);
@@ -1016,7 +1016,7 @@ outfile.close(); outfile.clear();
 
 
 
-void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data){
+void write_CM(long start, long end, long num_frames, long num_atoms, double epsilon, double *data, string add_name=""){
 //contact map calculation
  ofstream outfile;
  ifstream infile;
@@ -1041,7 +1041,7 @@ double elapsedTime;
 //cout<<"Calculating the contact map..."<<endl;
  
   string eps_str = num_to_str(epsilon);
-  string namef="contactmap_eps_"+eps_str+".txt";
+  string namef=add_name+"contactmap_eps_"+eps_str+".txt";
   infile.open(namef.c_str(), ios::in);
     if(infile){
     cout<<"previous contact map exist"<<endl; 
