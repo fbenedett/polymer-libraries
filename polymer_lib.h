@@ -1088,9 +1088,9 @@ double elapsedTime;
 //cout<<"Time to calculate the map in millisec: "<<elapsedTime<<endl;
 
 
-vector <double> avevals;
-vector <double> stdvals_mean;
-vector <double> medians;
+vector <double> avevals; avevals.resize(sizem);
+vector <double> stdvals_mean; stdvals_mean.resize(sizem);
+#pragma omp parallel for shared(avevals, stdvals_mean)
 for(long j=0;j<sizem;++j){
  vector <double> temp;
  long i=0, k=j;
@@ -1103,8 +1103,8 @@ for(long j=0;j<sizem;++j){
  for(int vali=0;vali<temp.size();++vali)
  a.Add(temp[vali]);
  
- avevals.push_back(a.GetAverage());
- stdvals_mean.push_back(a.GetMeanSquare(a.Get_koptimal()));
+ avevals[j]=a.GetAverage();
+ stdvals_mean[j]=a.GetMeanSquare(a.Get_koptimal());
  temp.clear();
  }
 
