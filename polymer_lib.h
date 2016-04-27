@@ -46,7 +46,7 @@ void load_matrix(double *data, string namefile);
 double error_bar(double *data, long size);
 double distance(long current_frame, long num_atoms, long atom_num1, long atom_num2, double *alval);
 void center_mass_xyz(long current_frame, long num_atoms, long start, long end, double *res, double *alval);
-double ave_frame_distace(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results);
+double ave_frame_distance(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results);
 double radius_gyration(long current_frame, long num_atoms, double *alval);
 double radius_gyration(long current_frame, long num_atoms, double *alval, long start, long end);
 double end_to_end_distance(vector <double> &x, vector <double> &y, vector <double> &z, int window, bool circular);
@@ -230,7 +230,7 @@ double twist_of_frame(double *chain_x, double *chain_y, double *chain_z, double 
 /*Using auxiliary beads it calculate the twist of a given chain.
 Chain_x _y _z contain the coordinates of the real beads of the polymer.  ph_x _y _z contain the middle auxiliary beads.
 th_x _y _z cointain the coordinates of the out of axis beads.
-This routine should be applied only when the coordinate frame is overlapped with a real bead, i.e. one virtual bead for every real bead
+This routine should be applied only when the reference frame of virtual beads sit in the middle of two consecutive real beads.
 */
 double twist_of_frame(double *chain_x, double *chain_y, double *chain_z, double *ph_x, double *ph_y, double *ph_z, double *th_x, double *th_y, double *th_z, long NbSegments)
   {//needs the portion of the chain on which we want to calculate the twist in chain_x,y,z 
@@ -631,7 +631,7 @@ void center_mass_xyz(long current_frame, long num_atoms, long start, long end, d
 // averaging in all the frames
 // the routine allow also to calculate the average distance for a section
 // of the chain, starting from "index_atom_reference" and ending with the atom "last_index_longerested"
-double ave_frame_distace(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results)
+double ave_frame_distance(long num_frames, long num_atoms, long index_atom_reference, long first_index_interested, long last_index_interested, double *alval, double *results)
 {
 
 double xref, yref, zref, xn, yn, zn;
@@ -1024,18 +1024,13 @@ void write_CM(long start, long end, long num_frames, long num_atoms, double epsi
 long sizem=end-start;
 
 vector <vector <double> > map;
-for(long j=0;j<sizem;++j){
-    vector <double> temp;
-    for(long k=0;k<sizem; ++k){
-        temp.push_back(0);
-    }
-    map.push_back(temp);
-    temp.clear();
-}
+map.resize(sizem);
+for(long j=0;j<map.size();++j)
+  map[j].resize(sizem);
 
-timeval t1, t2;
-double elapsedTime;
 
+//timeval t1, t2;
+//double elapsedTime;
 //start timer
 //gettimeofday(&t1, NULL);
 //cout<<"Calculating the contact map..."<<endl;
