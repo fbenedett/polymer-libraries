@@ -126,14 +126,17 @@ void reduce_polymer(const vector <double> &chain_x,const vector <double> &chain_
 	      if(it3==chain_reduced_index.end())it3=chain_reduced_index.begin();
 	    }
 	}
-      //////debug////////
-      ofstream outfile;
-      stringstream ss;
-      ss<<"test_conf_"<<iteration;
-      outfile.open(ss.str().c_str());
-      for( list<int>::iterator it=chain_reduced_index.begin();it!=chain_reduced_index.end();it++)
-	outfile<<chain_x[*it]<<" "<<chain_y[*it]<<" "<<chain_z[*it]<<endl;	
-      outfile.close();
+
+////      //////debug////////
+////      ofstream outfile;
+////      stringstream ss;
+////      ss<<"test_conf_"<<iteration;
+////      outfile.open(ss.str().c_str());
+////      for( list<int>::iterator it=chain_reduced_index.begin();it!=chain_reduced_index.end();it++)
+////	outfile<<chain_x[*it]<<" "<<chain_y[*it]<<" "<<chain_z[*it]<<endl;	
+////      outfile.close();
+
+
       iteration++;
     }
 
@@ -162,7 +165,7 @@ int AlexanderPolynomial(double e1x, double e1y, double e1z, double e2x, double e
   int *a_out=new int[NbSegments*NbSegments];
   int *a_top=new int[NbSegments*NbSegments];
   long long Alexander1=0, Alexander2=0;
-  cout<<"size of xc yc zc: "<<xc.size()<<" "<<yc.size()<<" "<<zc.size()<<endl;
+  //cout<<"size of xc yc zc: "<<xc.size()<<" "<<yc.size()<<" "<<zc.size()<<endl;
 
   //check that e1 and e2 are orthonormal
   if(fabs(e1x*e1x+e1y*e1y+e1z*e1z-1)>ZERO){cerr<<"Alexander polynomial: the vector defining the projection plane have to be othonormal"<<endl; exit(1);}
